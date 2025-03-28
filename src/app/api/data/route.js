@@ -7,13 +7,19 @@ async function readMessages() {
   try {
     const fileContents = await fs.readFile(dataFilePath, 'utf8');
     return JSON.parse(fileContents);
-  } catch (error) {
+  } catch (err) {
+    console.error('Error reading messages:', err);
     return { messages: [] };
   }
 }
 
 async function writeMessages(data) {
-  await fs.writeFile(dataFilePath, JSON.stringify(data, null, 2));
+  try {
+    await fs.writeFile(dataFilePath, JSON.stringify(data, null, 2));
+  } catch (err) {
+    console.error('Error writing messages:', err);
+    throw new Error('Failed to save messages');
+  }
 }
 
 export async function GET() {
@@ -46,7 +52,8 @@ export async function POST(request) {
       message: 'Message saved successfully',
       data: data.messages
     });
-  } catch (error) {
+  } catch (err) {
+    console.error('Error in POST request:', err);
     return Response.json(
       { error: 'Failed to save message' },
       { status: 500 }

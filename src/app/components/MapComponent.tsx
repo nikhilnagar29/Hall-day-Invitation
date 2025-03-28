@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
 import 'leaflet/dist/leaflet.css';
-import 'leaflet-routing-machine/dist/leaflet-routing-machine.css';
+import type { Map as LeafletMap } from 'leaflet';
 
 // Define props type
 interface MapComponentProps {
@@ -12,16 +12,13 @@ interface MapComponentProps {
 }
 
 const MapComponent = ({ partyLat, partyLng }: MapComponentProps) => {
-  const mapRef = useRef<any>(null);
-  const mapInstanceRef = useRef<any>(null);
-  const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
+  const mapInstanceRef = useRef<LeafletMap | null>(null);
 
   useEffect(() => {
     const initMap = async () => {
       if (mapInstanceRef.current) return;
 
       const L = (await import('leaflet')).default;
-      await import('leaflet-routing-machine');
 
       // Initialize map
       mapInstanceRef.current = L.map('map').setView([partyLat, partyLng], 15);
@@ -51,7 +48,6 @@ const MapComponent = ({ partyLat, partyLng }: MapComponentProps) => {
               position.coords.latitude,
               position.coords.longitude
             ];
-            setUserLocation(userPos);
 
             // Add user location marker
             const userIcon = L.icon({
@@ -60,14 +56,16 @@ const MapComponent = ({ partyLat, partyLng }: MapComponentProps) => {
               iconAnchor: [12, 41]
             });
 
-            L.marker(userPos, { icon: userIcon })
-              .addTo(mapInstanceRef.current)
-              .bindPopup('📍 You')
-              .openPopup();
+            if (mapInstanceRef.current) {
+              L.marker(userPos, { icon: userIcon })
+                .addTo(mapInstanceRef.current)
+                .bindPopup('📍 You')
+                .openPopup();
+            }
           },
           (error) => {
             alert(`Error getting location: ${error.message}`);
-            mapInstanceRef.current.setView([partyLat, partyLng], 15);
+            mapInstanceRef.current?.setView([partyLat, partyLng], 15);
           },
           {
             enableHighAccuracy: true,
