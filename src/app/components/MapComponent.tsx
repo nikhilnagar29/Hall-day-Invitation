@@ -1,9 +1,8 @@
 // components/MapComponent.tsx
 'use client';
 import { useEffect, useRef } from 'react';
-import dynamic from 'next/dynamic';
+import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import type { Map as LeafletMap } from 'leaflet';
 
 // Define props type
 interface MapComponentProps {
@@ -11,19 +10,18 @@ interface MapComponentProps {
   partyLng: number;
 }
 
-const MapComponent = ({ partyLat, partyLng }: MapComponentProps) => {
-  const mapInstanceRef = useRef<LeafletMap | null>(null);
+export default function MapComponent({ partyLat, partyLng }: MapComponentProps) {
+  const mapRef = useRef<L.Map | null>(null);
+  const mapInstanceRef = useRef<L.Map | null>(null);
+  const userMarkerRef = useRef<L.Marker | null>(null);
+  const partyMarkerRef = useRef<L.Marker | null>(null);
 
   useEffect(() => {
-    const initMap = async () => {
-      if (mapInstanceRef.current) return;
+    if (typeof window === 'undefined') return;
 
-      const L = (await import('leaflet')).default;
-
-      // Initialize map
+    // Initialize map if not already initialized
+    if (!mapInstanceRef.current) {
       mapInstanceRef.current = L.map('map').setView([partyLat, partyLng], 15);
-
-      // Add OpenStreetMap tiles
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '© OpenStreetMap contributors'
       }).addTo(mapInstanceRef.current);
@@ -31,55 +29,73 @@ const MapComponent = ({ partyLat, partyLng }: MapComponentProps) => {
       // Add party location marker
       const partyIcon = L.icon({
         iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
         iconSize: [25, 41],
-        iconAnchor: [12, 41]
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        shadowSize: [41, 41],
+        shadowAnchor: [12, 41]
       });
 
-      L.marker([partyLat, partyLng], { icon: partyIcon })
+      partyMarkerRef.current = L.marker([partyLat, partyLng], { icon: partyIcon })
         .addTo(mapInstanceRef.current)
-        .bindPopup('🎉 Party Location!')
-        .openPopup();
+        .bindPopup('Party Location: Room C-428');
 
-      // Get user's location with high accuracy
-      if (navigator.geolocation) {
+      // Try to get user's location
+      if ("geolocation" in navigator) {
         navigator.geolocation.getCurrentPosition(
           (position) => {
-            const userPos: [number, number] = [
-              position.coords.latitude,
-              position.coords.longitude
-            ];
-
+            const { latitude, longitude } = position.coords;
+            
             // Add user location marker
             const userIcon = L.icon({
               iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
+              shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
               iconSize: [25, 41],
-              iconAnchor: [12, 41]
+              iconAnchor: [12, 41],
+              popupAnchor: [1, -34],
+              shadowSize: [41, 41],
+              shadowAnchor: [12, 41]
             });
 
+            if (userMarkerRef.current) {
+              userMarkerRef.current.setLatLng([latitude, longitude]);
+            } else {
+              const map = mapInstanceRef.current;
+              if (map) {
+                userMarkerRef.current = L.marker([latitude, longitude], { icon: userIcon })
+                  .addTo(map)
+                  .bindPopup('Your Location');
+              }
+            }
+
+            // Fit bounds to show both markers
+            const bounds = L.latLngBounds(
+              [latitude, longitude],
+              [partyLat, partyLng]
+            );
             if (mapInstanceRef.current) {
-              L.marker(userPos, { icon: userIcon })
-                .addTo(mapInstanceRef.current)
-                .bindPopup('📍 You')
-                .openPopup();
+              mapInstanceRef.current!.fitBounds(bounds, { padding: [50, 50] });
             }
           },
           (error) => {
-            alert(`Error getting location: ${error.message}`);
-            mapInstanceRef.current?.setView([partyLat, partyLng], 15);
-          },
-          {
-            enableHighAccuracy: true,
-            timeout: 5000,
-            maximumAge: 0
+            console.log('Location access denied or unavailable');
+            // Center map on party location if user location is not available
+            if (mapInstanceRef.current) {
+              mapInstanceRef.current.setView([partyLat, partyLng], 15);
+            }
           }
         );
       } else {
-        alert("Geolocation is not supported by this browser.");
+        console.log('Geolocation is not supported by this browser');
+        // Center map on party location if geolocation is not supported
+        if (mapInstanceRef.current) {
+          mapInstanceRef.current.setView([partyLat, partyLng], 15);
+        }
       }
-    };
+    }
 
-    initMap();
-
+    // Cleanup function
     return () => {
       if (mapInstanceRef.current) {
         mapInstanceRef.current.remove();
@@ -88,7 +104,5 @@ const MapComponent = ({ partyLat, partyLng }: MapComponentProps) => {
     };
   }, [partyLat, partyLng]);
 
-  return <div id="map" style={{ height: '500px', width: '100%', borderRadius: '15px' }} />;
-};
-
-export default dynamic(() => Promise.resolve(MapComponent), { ssr: false });
+  return <div id="map" className="w-full h-full" />;
+}

@@ -39,10 +39,21 @@ export async function POST(request) {
     }
 
     const data = await readMessages();
+    const now = new Date();
+    const formattedDate = now.toLocaleString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true
+    });
+
     data.messages.push({
+      _id: Date.now().toString(),
       name,
       message,
-      timestamp: new Date().toISOString()
+      createdAt: formattedDate
     });
 
     await writeMessages(data);
