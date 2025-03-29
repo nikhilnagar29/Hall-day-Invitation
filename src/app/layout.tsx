@@ -11,7 +11,7 @@ const bangers = Bangers({
 });
 
 export const metadata: Metadata = {
-  title: "Hall Day Invitation - C-428",
+  title: "Hall Day Invitation C-248",
   description: "Join us for an amazing Hall Day celebration!",
 };
 
