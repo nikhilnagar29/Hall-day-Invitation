@@ -35,7 +35,7 @@ export default function HallDayInvitation() {
   const partyDetails = {
     date: '29 March',
     time: '8:00 PM',
-    location: 'Room C-428',
+    location: 'Room C-248',
     hosts: [
       { name: 'Nikhil Nagar', image: '/nikhil.jpg' },
       { name: 'Krishnendu Polley', image: '/krishnendu.jpg' },
