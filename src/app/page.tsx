@@ -121,7 +121,7 @@ export default function HallDayInvitation() {
             className="text-6xl md:text-8xl font-bold text-yellow-400 mb-8 drop-shadow-[0_0_10px_rgba(250,204,21,0.7)]"
             style={{ fontFamily: "'Bangers', cursive" }}
           >
-            It's RP Day!
+            It&apos;s RP Day!
           </motion.h1>
 
           {!isPartyStarted ? (
@@ -160,7 +160,7 @@ export default function HallDayInvitation() {
               transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
               className="text-5xl text-yellow-400 font-bold mb-8 bg-black/40 backdrop-blur-md p-8 rounded-2xl border-2 border-yellow-400/50 shadow-[0_0_30px_rgba(250,204,21,0.4)]"
             >
-              🎉 Daddy's Home! Do join us! 🎉
+              🎉 Daddy&apos;s Home! Do join us! 🎉
             </motion.div>
           )}
         </section>
