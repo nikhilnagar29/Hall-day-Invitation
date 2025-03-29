@@ -13,6 +13,17 @@ const bangers = Bangers({
 export const metadata: Metadata = {
   title: "Hall Day Invitation C-248",
   description: "Join us for an amazing Hall Day celebration!",
+  openGraph: {
+    title: "Hall Day Invitation C-248",
+    description: "Join us for an amazing Hall Day celebration!",
+    type: "website",
+    locale: "en_US",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Hall Day Invitation C-248",
+    description: "Join us for an amazing Hall Day celebration!",
+  },
 };
 
 export default function RootLayout({
